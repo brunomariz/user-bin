@@ -1,0 +1,49 @@
+#!/bin/bash
+
+Help()
+{
+   # Display Help
+   echo \
+"Template for shell scripts.
+Add description of the script functions here."
+   echo
+   echo "Syntax: scriptTemplate [-g|h|v|V]"
+   echo "options:"
+   echo "h     Print this Help."
+   echo "n     Define name to say hello to."
+   echo "V     Print software version and exit."
+   echo
+}
+
+Version(){
+   echo "Version $1"
+}
+
+############################################################
+############################################################
+# Main program                                             #
+############################################################
+############################################################
+
+
+# Set variables
+Name="world"
+
+# Get the options
+while getopts ":hn:V" option; do
+   case $option in
+      h) # display Help
+         Help
+         exit;;
+      n) # Enter a name
+         Name=$OPTARG;;
+      V) #asda
+         Version 0.0;
+         exit;;
+     \?) # Invalid option
+         echo "Error: Invalid option"
+         exit;;
+   esac
+done
+
+echo "hello $Name"

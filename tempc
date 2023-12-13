@@ -1,0 +1,64 @@
+#!/bin/bash
+
+RunContainer() {
+
+DOCKER_IMAGE=${1:?"missing arg 1 for DOCKER_IMAGE"}
+
+USER_ID=$(id -u)
+GID=$(id -g)
+docker run --rm -it \
+    --user $USER_ID:$GID \
+    --workdir="/home/$USER/shared" \
+    --volume="/etc/group:/etc/group:ro" \
+    --volume="/etc/passwd:/etc/passwd:ro" \
+    --volume="/etc/shadow:/etc/shadow:ro" \
+    -v $PWD:/home/$USER/shared \
+    $DOCKER_IMAGE /bin/bash
+}
+
+
+Help()
+{
+   # Display Help
+   echo \
+"Run a temporary container with shared volume."
+   echo
+   echo "Syntax: tempc [-h|v] DOCKER_IMAGE"
+   echo "options:"
+   echo "h     Print this Help."
+   echo "v     Print software version and exit."
+   echo
+}
+
+Version(){
+   echo "Version $1"
+}
+
+############################################################
+############################################################
+# Main program                                             #
+############################################################
+############################################################
+
+
+# Get the options
+while getopts ":hn:v" option; do
+   case $option in
+      h) # display Help
+         Help
+         exit;;
+      n) # Enter a name
+         Name=$OPTARG;;
+      v) # display version
+         Version 0.0;
+         exit;;
+     \?) # Invalid option
+         echo "Error: Invalid option"
+         exit;;
+   esac
+done
+
+RunContainer $1
+
+
+

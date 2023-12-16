@@ -3,17 +3,22 @@
 RunContainer() {
 
 DOCKER_IMAGE=${1:?"missing arg 1 for DOCKER_IMAGE"}
+SHARED=$2
+CONTAINER_SHARED_DIR="/home/$USER/shared"
+HOST_SHARED_DIR=$PWD
 
-USER_ID=$(id -u)
-GID=$(id -g)
-docker run --rm -it \
-    --user $USER_ID:$GID \
-    --workdir="/home/$USER/shared" \
-    --volume="/etc/group:/etc/group:ro" \
-    --volume="/etc/passwd:/etc/passwd:ro" \
-    --volume="/etc/shadow:/etc/shadow:ro" \
-    -v $PWD:/home/$USER/shared \
-    $DOCKER_IMAGE /bin/bash
+if [ $SHARED = "1" ]; then
+   EchoYellow "WARNING: creating SHARED VOLUME between host and container"
+   EchoYellow "Any changes made on container's $CONTAINER_SHARED_DIR directory will be applied to host's $HOST_SHARED_DIR directory."
+
+   docker run --rm -it \
+      --workdir=$CONTAINER_SHARED_DIR \
+      -v $HOST_SHARED_DIR:$CONTAINER_SHARED_DIR \
+      $DOCKER_IMAGE /bin/bash 
+else
+   docker run --rm -it \
+      $DOCKER_IMAGE /bin/bash 
+fi
 }
 
 
@@ -23,9 +28,10 @@ Help()
    echo \
 "Run a temporary container with shared volume."
    echo
-   echo "Syntax: tempc [-h|v] DOCKER_IMAGE"
+   echo "Syntax: tempc [-h|s|v] DOCKER_IMAGE"
    echo "options:"
    echo "h     Print this Help."
+   echo "s     Create shared volume at \$PWD:/home/\$USER/shared."
    echo "v     Print software version and exit."
    echo
 }
@@ -34,21 +40,33 @@ Version(){
    echo "Version $1"
 }
 
+EchoYellow(){
+   echo -e "\033[33m$1\033[0m"
+}
+
 ############################################################
 ############################################################
 # Main program                                             #
 ############################################################
 ############################################################
 
+if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied"
+    Help;
+    exit;
+fi
+
+SHARED=0;
 
 # Get the options
-while getopts ":hn:v" option; do
+while getopts ":hsv" option; do
    case $option in
       h) # display Help
          Help
          exit;;
-      n) # Enter a name
-         Name=$OPTARG;;
+      s) # create shared volume
+         SHARED=1;;
       v) # display version
          Version 0.0;
          exit;;
@@ -58,7 +76,9 @@ while getopts ":hn:v" option; do
    esac
 done
 
-RunContainer $1
+shift $(($OPTIND - 1))
+
+RunContainer $1 $SHARED
 
 
 

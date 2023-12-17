@@ -4,7 +4,7 @@ Help()
 {
    # Display Help
    echo \
-"Run a temporary container with shared volume."
+"Run a temporary container."
    echo
    echo "Syntax: tempc [-h|n:|p:|s|v] DOCKER_IMAGE"
    echo "options:"

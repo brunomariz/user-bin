@@ -4,21 +4,29 @@ RunContainer() {
 
 DOCKER_IMAGE=${1:?"missing arg 1 for DOCKER_IMAGE"}
 SHARED=$2
+CONTAINER_NAME=$3
+
+declare - a args=()
+# Add name argument
+if [ -z $CONTAINER_NAME ]; then
+   echo "Creating container with random name. For naming options run tempc -h."
+else
+   EchoYellow $CONTAINER_NAME
+   args+=("--name=$CONTAINER_NAME")
+fi
+# Add shared volume arguments
 CONTAINER_SHARED_DIR="/home/$USER/shared"
 HOST_SHARED_DIR=$PWD
+(($SHARED == 1)) && EchoYellow "WARNING: creating SHARED VOLUME between host and container"
+(($SHARED == 1)) && EchoYellow "Any changes made on container's $CONTAINER_SHARED_DIR directory will be applied to host's $HOST_SHARED_DIR directory."
+(($SHARED == 1)) && args+=("--workdir=$CONTAINER_SHARED_DIR")
+(($SHARED == 1)) && args+=("-v $HOST_SHARED_DIR:$CONTAINER_SHARED_DIR")
+# Add image argument
+args+=("$DOCKER_IMAGE /bin/bash")
 
-if [ $SHARED = "1" ]; then
-   EchoYellow "WARNING: creating SHARED VOLUME between host and container"
-   EchoYellow "Any changes made on container's $CONTAINER_SHARED_DIR directory will be applied to host's $HOST_SHARED_DIR directory."
-
-   docker run --rm -it \
-      --workdir=$CONTAINER_SHARED_DIR \
-      -v $HOST_SHARED_DIR:$CONTAINER_SHARED_DIR \
-      $DOCKER_IMAGE /bin/bash 
-else
-   docker run --rm -it \
-      $DOCKER_IMAGE /bin/bash 
-fi
+# Run container
+docker run --rm -it \
+   $(echo "${args[@]}")
 }
 
 
@@ -28,11 +36,12 @@ Help()
    echo \
 "Run a temporary container with shared volume."
    echo
-   echo "Syntax: tempc [-h|s|v] DOCKER_IMAGE"
+   echo "Syntax: tempc [-h|n:|s|v] DOCKER_IMAGE"
    echo "options:"
-   echo "h     Print this Help."
-   echo "s     Create shared volume at \$PWD:/home/\$USER/shared."
-   echo "v     Print software version and exit."
+   echo "h       Print this Help."
+   echo "n NAME  Set container name."
+   echo "s       Create shared volume at \$PWD:/home/\$USER/shared."
+   echo "v       Print software version."
    echo
 }
 
@@ -50,25 +59,20 @@ EchoYellow(){
 ############################################################
 ############################################################
 
-if [ $# -eq 0 ]
-  then
-    echo "No arguments supplied"
-    Help;
-    exit;
-fi
-
 SHARED=0;
 
 # Get the options
-while getopts ":hsv" option; do
+while getopts ":hn:sv" option; do
    case $option in
       h) # display Help
          Help
          exit;;
+      n) # set container name
+         NAME=$OPTARG;;
       s) # create shared volume
          SHARED=1;;
       v) # display version
-         Version 0.0;
+         Version;
          exit;;
      \?) # Invalid option
          echo "Error: Invalid option"
@@ -78,7 +82,14 @@ done
 
 shift $(($OPTIND - 1))
 
-RunContainer $1 $SHARED
+if [ $# -eq 0 ]
+  then
+    echo "No arguments supplied for DOCKER_IMAGE"
+    Help;
+    exit;
+fi
+
+RunContainer $1 $SHARED $NAME
 
 
 

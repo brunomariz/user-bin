@@ -3,8 +3,8 @@
 Help()
 {
    # Display Help
-   echo \
-"Run a temporary container."
+   echo
+   echo "Run a temporary container."
    echo
    echo "Syntax: tempc [-h|n:|p:|s|v] DOCKER_IMAGE"
    echo "options:"
@@ -68,6 +68,12 @@ done
 
 shift $(($OPTIND - 1))
 DOCKER_IMAGE=$1
+
+if [ -z $CONTAINER_NAME ]; then
+   echo "No image provided."
+   Help
+   exit
+fi
 
 # Add image argument
 args+=("$DOCKER_IMAGE /bin/bash")

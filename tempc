@@ -42,7 +42,6 @@ while getopts ":hn:p:sv" option; do
       n) # set container name
          # Add name argument
          CONTAINER_NAME=$OPTARG
-         echo $CONTAINER_NAME
          args+=("--name=$CONTAINER_NAME --hostname=$CONTAINER_NAME");;
       p) # set ports
          # Add ports argument
@@ -80,6 +79,8 @@ args+=("$DOCKER_IMAGE /bin/bash")
 
 if [ -z $CONTAINER_NAME ]; then
    echo "Creating container with random name. For naming options run tempc -h."
+else
+   echo $CONTAINER_NAME
 fi
 
 # Run container

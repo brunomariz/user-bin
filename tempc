@@ -1,42 +1,12 @@
 #!/bin/bash
 
-RunContainer() {
-
-DOCKER_IMAGE=${1:?"missing arg 1 for DOCKER_IMAGE"}
-SHARED=$2
-CONTAINER_NAME=$3
-
-declare -a args=()
-# Add name argument
-if [ -z $CONTAINER_NAME ]; then
-   echo "Creating container with random name. For naming options run tempc -h."
-else
-   echo $CONTAINER_NAME
-   args+=("--name=$CONTAINER_NAME --hostname=$CONTAINER_NAME")
-fi
-# Add shared volume arguments
-CONTAINER_SHARED_DIR="/home/$USER/shared"
-HOST_SHARED_DIR=$PWD
-(($SHARED == 1)) && EchoYellow "WARNING: creating SHARED VOLUME between host and container"
-(($SHARED == 1)) && EchoYellow "Any changes made on container's $CONTAINER_SHARED_DIR directory will be applied to host's $HOST_SHARED_DIR directory."
-(($SHARED == 1)) && args+=("--workdir=$CONTAINER_SHARED_DIR")
-(($SHARED == 1)) && args+=("-v $HOST_SHARED_DIR:$CONTAINER_SHARED_DIR")
-# Add image argument
-args+=("$DOCKER_IMAGE /bin/bash")
-
-# Run container
-docker run --rm -it \
-   $(echo "${args[@]}")
-}
-
-
 Help()
 {
    # Display Help
    echo \
 "Run a temporary container with shared volume."
    echo
-   echo "Syntax: tempc [-h|n:|s|v] DOCKER_IMAGE"
+   echo "Syntax: tempc [-h|n:|p:|s|v] DOCKER_IMAGE"
    echo "options:"
    echo "h       Print this Help."
    echo "n NAME  Set container name and hostname."
@@ -59,18 +29,33 @@ EchoYellow(){
 ############################################################
 ############################################################
 
-SHARED=0;
+# Declare arguments array
+declare -a args=()
 
 # Get the options
-while getopts ":hn:sv" option; do
+while getopts ":hn:p:sv" option; do
    case $option in
       h) # display Help
          Help
          exit;;
       n) # set container name
-         NAME=$OPTARG;;
+         # Add name argument
+         CONTAINER_NAME=$OPTARG
+         echo $CONTAINER_NAME
+         args+=("--name=$CONTAINER_NAME --hostname=$CONTAINER_NAME");;
+      p) # set ports
+         # Add ports argument
+         CONTAINER_PORTS=$OPTARG
+         args+=("-p $CONTAINER_PORTS");;
       s) # create shared volume
-         SHARED=1;;
+         # Add shared volume arguments
+         CONTAINER_SHARED_DIR="/home/$USER/shared"
+         HOST_SHARED_DIR=$PWD
+         EchoYellow "WARNING: creating SHARED VOLUME between host and container"
+         EchoYellow "Any changes made on container's $CONTAINER_SHARED_DIR directory will be applied to host's $HOST_SHARED_DIR directory."
+         args+=("--workdir=$CONTAINER_SHARED_DIR")
+         args+=("-v $HOST_SHARED_DIR:$CONTAINER_SHARED_DIR");;
+
       v) # display version
          Version;
          exit;;
@@ -81,15 +66,16 @@ while getopts ":hn:sv" option; do
 done
 
 shift $(($OPTIND - 1))
+DOCKER_IMAGE=$1
 
-if [ $# -eq 0 ]
-  then
-    echo "No arguments supplied for DOCKER_IMAGE"
-    Help;
-    exit;
+# Add image argument
+args+=("$DOCKER_IMAGE /bin/bash")
+
+if [ -z $CONTAINER_NAME ]; then
+   echo "Creating container with random name. For naming options run tempc -h."
 fi
 
-RunContainer $1 $SHARED $NAME
-
-
+# Run container
+docker run --rm -it \
+   $(echo "${args[@]}")
 

@@ -11,8 +11,8 @@ declare -a args=()
 if [ -z $CONTAINER_NAME ]; then
    echo "Creating container with random name. For naming options run tempc -h."
 else
-   EchoYellow $CONTAINER_NAME
-   args+=("--name=$CONTAINER_NAME")
+   echo $CONTAINER_NAME
+   args+=("--name=$CONTAINER_NAME --hostname=$CONTAINER_NAME")
 fi
 # Add shared volume arguments
 CONTAINER_SHARED_DIR="/home/$USER/shared"
@@ -39,7 +39,7 @@ Help()
    echo "Syntax: tempc [-h|n:|s|v] DOCKER_IMAGE"
    echo "options:"
    echo "h       Print this Help."
-   echo "n NAME  Set container name."
+   echo "n NAME  Set container name and hostname."
    echo "s       Create shared volume at \$PWD:/home/\$USER/shared."
    echo "v       Print software version."
    echo

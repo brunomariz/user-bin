@@ -6,7 +6,7 @@ DOCKER_IMAGE=${1:?"missing arg 1 for DOCKER_IMAGE"}
 SHARED=$2
 CONTAINER_NAME=$3
 
-declare - a args=()
+declare -a args=()
 # Add name argument
 if [ -z $CONTAINER_NAME ]; then
    echo "Creating container with random name. For naming options run tempc -h."

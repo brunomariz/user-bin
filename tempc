@@ -10,6 +10,7 @@ Help()
    echo "options:"
    echo "h       Print this Help."
    echo "n NAME  Set container name and hostname."
+   echo "n PORT  Set container name and hostname. PORT should be in the same format as docker -p argument, HOST_PORT:CONTAINER_PORT"
    echo "s       Create shared volume at \$PWD:/home/\$USER/shared."
    echo "v       Print software version."
    echo

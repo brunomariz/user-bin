@@ -7,7 +7,8 @@ Help()
    echo "Run a temporary container."
    echo "Default command run by script: docker run --rm -it DOCKER_IMAGE /bin/bash" 
    echo
-   echo "Syntax: tempc [-h|n:|p:|s|v] DOCKER_IMAGE"
+   echo "Syntax: tempc [-h|n:|p:|s|v] [-- OTHER_DOCKER_ARGUMENTS] DOCKER_IMAGE"
+   echo "Example: tempc -n server -- --net my-net --ip 172.18.50.50 ubuntu"
    echo "options:"
    echo "h       Print this Help."
    echo "n NAME  Set container name and hostname."
@@ -60,23 +61,25 @@ while getopts ":hn:p:sv" option; do
       v) # display version
          Version;
          exit;;
-     \?) # Invalid option
-         echo "Error: Invalid option"
-         exit;;
+   #   \?) # Append extra options
+   #       echo "$OPT $OPTARG"
+   #       exit;;
    esac
 done
 
 shift $(($OPTIND - 1))
-DOCKER_IMAGE=$1
 
-if [ -z $DOCKER_IMAGE ]; then
+REMAINING_ARGS=$@
+echo "$REMAINING_ARGS"
+
+if [[ -z ${REMAINING_ARGS} ]]; then
    echo "No image provided."
    Help
    exit
 fi
 
 # Add image argument
-args+=("$DOCKER_IMAGE /bin/bash")
+args+=("$REMAINING_ARGS /bin/bash")
 
 if [ -z $CONTAINER_NAME ]; then
    echo "Creating container with random name. For naming options run tempc -h."

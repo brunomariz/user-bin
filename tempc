@@ -15,6 +15,7 @@ Help()
    echo "p PORT  Set shared ports. PORT should be in the same format as docker -p argument, HOST_PORT:CONTAINER_PORT"
    echo "s       Create shared volume at \$PWD:/home/\$USER/shared."
    echo "v       Print software version."
+   echo "x       Share GUI display. Pair with 's' option to save graphical application files on host."
    echo
 }
 
@@ -36,7 +37,7 @@ EchoYellow(){
 declare -a args=()
 
 # Get the options
-while getopts ":hn:p:sv" option; do
+while getopts ":hn:p:svx" option; do
    case $option in
       h) # display Help
          Help
@@ -61,6 +62,13 @@ while getopts ":hn:p:sv" option; do
       v) # display version
          Version;
          exit;;
+
+      x) # share gui display
+         args+=("--privileged")
+         args+=("-e DISPLAY")
+         args+=("-v /tmp/.X11-unix:/tmp/.X11-unix:ro")
+         args+=("--net=host")
+
    #   \?) # Append extra options
    #       echo "$OPT $OPTARG"
    #       exit;;

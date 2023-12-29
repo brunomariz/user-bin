@@ -15,7 +15,7 @@ Help()
    echo "p PORT  Set shared ports. PORT should be in the same format as docker -p argument, HOST_PORT:CONTAINER_PORT"
    echo "s       Create shared volume at \$PWD:/home/\$USER/shared."
    echo "v       Print software version."
-   echo "x       Share GUI display. Pair with 's' option to save graphical application files on host."
+   echo "x       Share GUI display. Pair with 's' option to save graphical application files on host. 'xhost +' command might need to be used before."
    echo
 }
 

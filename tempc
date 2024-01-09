@@ -96,6 +96,7 @@ else
 fi
 
 # Run container
+echo "docker run --rm -it " "$(echo "${args[@]}")"
 docker run --rm -it \
    $(echo "${args[@]}")
 
